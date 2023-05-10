@@ -34,7 +34,7 @@ public class AbstractDAO<T> {
 
             return createObjects(resultSet);
         } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, type.getName() + "DAO:findAll " + e.getMessage());
+            LOGGER.log(Level.WARNING, type.getName() + "DAO:findAll " + e.getMessage(), e);
         } finally {
             ConnectionFactory.close(resultSet);
             ConnectionFactory.close(statement);
@@ -42,6 +42,7 @@ public class AbstractDAO<T> {
         }
         return null;
     }
+
 
     public String createSelectAll() {
         StringBuilder sb = new StringBuilder();

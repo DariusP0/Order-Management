@@ -37,21 +37,4 @@ public class ClientDAO extends AbstractDAO<Client> {
         return null;
     }
 
-
-    public void delete(Client client) {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        String query = "DELETE FROM student WHERE id = ?";
-        try {
-            connection = ConnectionFactory.getConnection();
-            statement = connection.prepareStatement(query);
-            statement.setInt(1, client.getId());
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "ClientDAO:delete " + e.getMessage());
-        } finally {
-            ConnectionFactory.close(statement);
-            ConnectionFactory.close(connection);
-        }
-    }
 }

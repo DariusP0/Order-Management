@@ -7,10 +7,8 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello world!");
+        Client C = new Client("balint","asdad","3414@gmail.com",21);
         ClientDAO clientDAO = new ClientDAO();
-        Client client = clientDAO.findById(5);
-
-        System.out.println(client);
 
 //    }
     }

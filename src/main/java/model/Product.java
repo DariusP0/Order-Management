@@ -1,24 +1,24 @@
 package model;
 public class Product {
 
-    private int productID,productQuantity,productPrice;
+    private int productId,productQuantity,productPrice;
     private String productName;
 
-    public Product(int productID, String productName, int productQuantity, int productPrice)
+    public Product(int productId, String productName, int productQuantity, int productPrice)
     {
-        this.productID = productID;
+        this.productId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
         this.productQuantity = productQuantity;
     }
 //----------------------------------------------ID
 
-    public int getproductID() {
-        return productID;
+    public int getId() {
+        return productId;
     }
 
-    public void setProductID(int productID) {
-        this.productID = productID;
+    public void setId(int productId) {
+        this.productId = productId;
     }
 //----------------------------------------------Name
 

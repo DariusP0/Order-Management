@@ -69,6 +69,19 @@ public class Gui {
 
         panel.add(new JScrollPane(clientsTable), BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.SOUTH);
+        List<Client> clientList = clientDAO.findAll();
+        for (Client client : clientList) {
+            if (client != null) {
+                Object[] rowData = {
+                        client.getId(),
+                        client.getName(),
+                        client.getAddress(),
+                        client.getEmail(),
+                        client.getAge()
+                };
+                model.addRow(rowData);
+            }
+        }
 
         // Add action listeners for the buttons (implement your logic here)
         addClientButton.addActionListener(new ActionListener() {
@@ -76,6 +89,7 @@ public class Gui {
             public void actionPerformed(ActionEvent e) {
                 // Handle add client button click
 
+                model.setRowCount(0);
 
                 String name = nameTextField.getText();
                 String address = addressTextField.getText();
@@ -121,6 +135,8 @@ public class Gui {
         editClientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                model.setRowCount(0);
+
                 String name = nameTextField.getText();
                 String address = addressTextField.getText();
                 String email = emailTextField.getText();
@@ -164,7 +180,36 @@ public class Gui {
         deleteClientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Handle delete client button click
+                model.setRowCount(0);
+
+                // Handle edit client button click
+                if(!idTextField.getText().isEmpty()){
+                    try{
+                        int id = Integer.parseInt(idTextField.getText());
+                        clientDAO.deleteById(id);
+                    }
+                    catch (NumberFormatException ex) {
+                        // Handle invalid ID format
+                        JOptionPane.showMessageDialog(frame, "Invalid ID format", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                List<Client> clientList = clientDAO.findAll();
+                for (Client client : clientList) {
+                    if (client != null) {
+                        Object[] rowData = {
+                                client.getId(),
+                                client.getName(),
+                                client.getAddress(),
+                                client.getEmail(),
+                                client.getAge()
+                        };
+                        model.addRow(rowData);
+                    }
+                }
+
+                // Clear the text fields
+                idTextField.setText("");
             }
         });
 

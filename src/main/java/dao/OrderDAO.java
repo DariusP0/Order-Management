@@ -1,4 +1,4 @@
 package dao;
-import model.Order;
-public class OrderDAO extends AbstractDAO<Order>{
+import model.Comanda;
+public class OrderDAO extends AbstractDAO<Comanda>{
 }

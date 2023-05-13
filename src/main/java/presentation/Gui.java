@@ -15,9 +15,11 @@ public class Gui {
     private JTextArea textArea;
     public ClientDAO clientDAO;
     public ProductDAO productDAO;
+    public OrderDAO orderDAO;
     public Gui() {
         clientDAO = new ClientDAO();
         productDAO = new ProductDAO();
+        orderDAO = new OrderDAO();
         frame = new JFrame("Order Management System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
@@ -243,8 +245,8 @@ public class Gui {
         DefaultTableModel model = new DefaultTableModel();
         model.addColumn("Product ID");
         model.addColumn("Product Name");
-        model.addColumn("Stock Quantity");
         model.addColumn("Price");
+        model.addColumn("Stock Quantity");
         productsTable.setModel(model);
 
         // Create buttons for product operations
@@ -430,14 +432,37 @@ public class Gui {
         JComboBox<String> clientDropdown = new JComboBox<>();
         JComboBox<String> productDropdown = new JComboBox<>();
 
+        // Populate the client dropdown with client names
+        List<Client> clientList = clientDAO.findAll();
+        for (Client client : clientList) {
+            clientDropdown.addItem(client.getName());
+        }
+        List<Product> productList = productDAO.findAll();
+        for (Product product : productList) {
+            productDropdown.addItem(String.valueOf(product.getId()));
+        }
+
         // Create text field for quantity input
         JTextField quantityTextField = new JTextField();
 
+        Dimension textFieldSize = new Dimension(120, quantityTextField.getPreferredSize().height);
+        quantityTextField.setPreferredSize(textFieldSize);
+
+// Add the quantity label and text field to the form panel
         // Create button for creating orders
         JButton createOrderButton = new JButton("Create Order");
         Dimension buttonSize = new Dimension(100, 30);
         // Set smaller button size
         createOrderButton.setPreferredSize(buttonSize);
+
+        // Create the table for displaying orders
+        DefaultTableModel orderModel = new DefaultTableModel();
+        orderModel.addColumn("Order ID");
+        orderModel.addColumn("Client Name");
+        orderModel.addColumn("Product Name");
+        orderModel.addColumn("Quantity");
+        JTable ordersTable = new JTable(orderModel);
+        JScrollPane scrollPane = new JScrollPane(ordersTable);
 
         // Add dropdowns, text field, and button to the panel
         JPanel formPanel = new JPanel();
@@ -445,23 +470,76 @@ public class Gui {
         formPanel.add(clientDropdown);
         formPanel.add(new JLabel("Select Product:"));
         formPanel.add(productDropdown);
-        formPanel.add(new JLabel("Quantity:"));
+        JLabel quantityLabel = new JLabel("Quantity:");
+        Dimension labelSize = new Dimension(80, quantityLabel.getPreferredSize().height);
+        quantityLabel.setPreferredSize(labelSize);
+
+// Add the quantity label and text field to the form panel
+        formPanel.add(quantityLabel);
         formPanel.add(quantityTextField);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(createOrderButton);
 
-        panel.add(formPanel, BorderLayout.CENTER);
+        panel.add(formPanel, BorderLayout.NORTH);
+        panel.add(scrollPane, BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Add action listener for the create order button (implement your logic here)
+        // Add action listener for the create order button
         createOrderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Handle create order button click
+                orderModel.setRowCount(0);
+                // Retrieve the selected client, product, and quantity
+                String selectedClientName = clientDropdown.getSelectedItem().toString();
+                String selectedProductName = productDropdown.getSelectedItem().toString();
+                int quantity = Integer.parseInt(quantityTextField.getText());
+
+                // Find the selected client object using the selected name
+                Client selectedClient = null;
+                for (Client client : clientList) {
+                    if (client.getName().equals(selectedClientName)) {
+                        selectedClient = client;
+                        break;
+                    }
+                }
+
+                // Find the selected product object using the selected product ID
+                Product selectedProduct = null;
+                for (Product product : productList) {
+                    if (Integer.parseInt(selectedProductName) == product.getId()) {
+                        selectedProduct = product;
+                        break;
+                    }
+                }
+
+                selectedProduct.setProductQuantity(selectedProduct.getProductQuantity() - quantity);
+                productDAO.update(selectedProduct);
+
+                // Create an order with the selected client, product, and quantity
+                Comanda order = new Comanda(selectedClient.getName(), selectedProduct.getProductName(), quantity);
+                orderDAO.insert(order);
+
+                // Handle the created order as needed (e.g., add it to the table model)
+                List<Comanda> orderList = orderDAO.findAll();
+                for (Comanda order1 : orderList) {
+                    if (order1 != null) {
+                        Object[] rowData = {
+                                order1.getId(),
+                                order1.getClient(),
+                                order1.getProdus(),
+                                order1.getQuantity(),
+                        };
+                        orderModel.addRow(rowData);
+                    }
+                }
+
+                // Clear the input fields
+                clientDropdown.setSelectedIndex(0);
+                productDropdown.setSelectedIndex(0);
+                quantityTextField.setText("");
             }
         });
-
         return panel;
     }
 

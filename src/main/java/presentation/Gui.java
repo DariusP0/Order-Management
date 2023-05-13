@@ -447,8 +447,10 @@ public class Gui {
 
         Dimension textFieldSize = new Dimension(120, quantityTextField.getPreferredSize().height);
         quantityTextField.setPreferredSize(textFieldSize);
+        JTextField idDelTextField = new JTextField();
 
-// Add the quantity label and text field to the form panel
+       idDelTextField.setPreferredSize(textFieldSize);
+        // Add the quantity label and text field to the form panel
         // Create button for creating orders
         JButton createOrderButton = new JButton("Create Order");
         Dimension buttonSize = new Dimension(100, 30);
@@ -473,18 +475,36 @@ public class Gui {
         JLabel quantityLabel = new JLabel("Quantity:");
         Dimension labelSize = new Dimension(80, quantityLabel.getPreferredSize().height);
         quantityLabel.setPreferredSize(labelSize);
-
-// Add the quantity label and text field to the form panel
+        JLabel idDeleteLabel = new JLabel("Delete(id):");
+        Dimension lbSize2 = new Dimension(80, idDeleteLabel.getPreferredSize().height);
+        idDeleteLabel.setPreferredSize(labelSize);
+        // Add the quantity label and text field to the form panel
         formPanel.add(quantityLabel);
         formPanel.add(quantityTextField);
-
+        formPanel.add(idDeleteLabel);
+        formPanel.add(idDelTextField);
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(createOrderButton);
+
+        JButton deleteOrderButton = new JButton("Delete Order");
+        deleteOrderButton.setPreferredSize(buttonSize);
+        buttonPanel.add(deleteOrderButton);
 
         panel.add(formPanel, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.SOUTH);
-
+        List<Comanda> orderList = orderDAO.findAll();
+        for (Comanda order1 : orderList) {
+            if (order1 != null) {
+                Object[] rowData = {
+                        order1.getId(),
+                        order1.getClient(),
+                        order1.getProdus(),
+                        order1.getQuantity(),
+                };
+                orderModel.addRow(rowData);
+            }
+        }
         // Add action listener for the create order button
         createOrderButton.addActionListener(new ActionListener() {
             @Override
@@ -540,6 +560,44 @@ public class Gui {
                 quantityTextField.setText("");
             }
         });
+        deleteOrderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                orderModel.setRowCount(0);
+
+                        int idDelete = Integer.parseInt(idDelTextField.getText());
+                        Comanda orderDel = orderDAO.findById(idDelete);
+
+                        Product selectedProduct = new Product();
+                        for (Product product : productList) {
+                            if (orderDel.getProdus().equals(product.getProductName())) {
+                                selectedProduct = product;
+                                break;
+                            }
+                        }
+                        selectedProduct.setProductQuantity(selectedProduct.getProductQuantity() + orderDel.getQuantity());
+                        productDAO.update(selectedProduct);
+                        orderDAO.deleteById(idDelete);
+
+                List<Comanda> orderList = orderDAO.findAll();
+                for (Comanda order1 : orderList) {
+                    if (order1 != null) {
+                        Object[] rowData = {
+                                order1.getId(),
+                                order1.getClient(),
+                                order1.getProdus(),
+                                order1.getQuantity(),
+                        };
+                        orderModel.addRow(rowData);
+                    }
+                }
+
+                // Clear the input fields
+                clientDropdown.setSelectedIndex(0);
+                productDropdown.setSelectedIndex(0);
+                quantityTextField.setText("");
+            }
+            });
         return panel;
     }
 

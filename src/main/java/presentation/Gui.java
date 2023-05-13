@@ -1,15 +1,21 @@
+package presentation;
+import dao.*;
+import model.Client;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.table.DefaultTableModel;
-
+import java.util.List;
 public class Gui {
     private JFrame frame;
     private JTable clientsTable;
     private JTable productsTable;
-
+    private JTextArea textArea;
+    public ClientDAO clientDAO;
     public Gui() {
+        clientDAO = new ClientDAO();
         frame = new JFrame("Order Management System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
@@ -37,6 +43,13 @@ public class Gui {
         model.addColumn("Age");
         clientsTable.setModel(model);
 
+        // Create text fields for client data entry
+        JTextField idTextField = new JTextField();
+        JTextField nameTextField = new JTextField();
+        JTextField addressTextField = new JTextField();
+        JTextField emailTextField = new JTextField();
+        JTextField ageTextField = new JTextField();
+
         // Create buttons for client operations
         JButton addClientButton = new JButton("Add Client");
         JButton editClientButton = new JButton("Edit Client");
@@ -62,13 +75,89 @@ public class Gui {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Handle add client button click
+
+
+                String name = nameTextField.getText();
+                String address = addressTextField.getText();
+                String email = emailTextField.getText();
+                int age = Integer.parseInt(ageTextField.getText());
+                if(!idTextField.getText().isEmpty()){
+                    try{
+                        int id = Integer.parseInt(idTextField.getText());
+                        Client c = new Client(id,name,address,email,age);clientDAO.insert(c);
+                    }
+                    catch (NumberFormatException ex) {
+                        // Handle invalid ID format
+                        JOptionPane.showMessageDialog(frame, "Invalid ID format", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+              }
+                else{ Client c = new Client(name,address,email,age);clientDAO.insert(c);}
+
+                // Add the data to the table
+                List<Client> clientList = clientDAO.findAll();
+                for (Client client : clientList) {
+                    if (client != null) {
+                        Object[] rowData = {
+                                client.getId(),
+                                client.getName(),
+                                client.getAddress(),
+                                client.getEmail(),
+                                client.getAge()
+                        };
+                        model.addRow(rowData);
+                    }
+                }
+
+                // Clear the text fields
+                idTextField.setText("");
+                nameTextField.setText("");
+                addressTextField.setText("");
+                emailTextField.setText("");
+                ageTextField.setText("");
             }
         });
 
         editClientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String name = nameTextField.getText();
+                String address = addressTextField.getText();
+                String email = emailTextField.getText();
+                int age = Integer.parseInt(ageTextField.getText());
                 // Handle edit client button click
+                if(!idTextField.getText().isEmpty()){
+                    try{
+                        int id = Integer.parseInt(idTextField.getText());
+                        Client c = new Client(id,name,address,email,age);
+                        clientDAO.update(c);;
+                    }
+                    catch (NumberFormatException ex) {
+                        // Handle invalid ID format
+                        JOptionPane.showMessageDialog(frame, "Invalid ID format", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                List<Client> clientList = clientDAO.findAll();
+                for (Client client : clientList) {
+                    if (client != null) {
+                        Object[] rowData = {
+                                client.getId(),
+                                client.getName(),
+                                client.getAddress(),
+                                client.getEmail(),
+                                client.getAge()
+                        };
+                        model.addRow(rowData);
+                    }
+                }
+
+                // Clear the text fields
+                idTextField.setText("");
+                nameTextField.setText("");
+                addressTextField.setText("");
+                emailTextField.setText("");
+                ageTextField.setText("");
             }
         });
 
@@ -79,8 +168,25 @@ public class Gui {
             }
         });
 
+        // Create a panel for the text fields
+        JPanel textFieldPanel = new JPanel(new GridLayout(5, 2));
+        textFieldPanel.add(new JLabel("Client ID:"));
+        textFieldPanel.add(idTextField);
+        textFieldPanel.add(new JLabel("Client Name:"));
+        textFieldPanel.add(nameTextField);
+        textFieldPanel.add(new JLabel("Address:"));
+        textFieldPanel.add(addressTextField);
+        textFieldPanel.add(new JLabel("Email:"));
+        textFieldPanel.add(emailTextField);
+        textFieldPanel.add(new JLabel("Age:"));
+        textFieldPanel.add(ageTextField);
+
+        // Add the text field panel to the main panel
+        panel.add(textFieldPanel, BorderLayout.NORTH);
+
         return panel;
     }
+
 
     private JPanel createProductOperationsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -184,6 +290,7 @@ public class Gui {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 new Gui();
+                OrderDAO O = new OrderDAO();
             }
         });
     }

@@ -1,6 +1,6 @@
 package presentation;
 import dao.*;
-import model.Client;
+import model.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,8 +14,10 @@ public class Gui {
     private JTable productsTable;
     private JTextArea textArea;
     public ClientDAO clientDAO;
+    public ProductDAO productDAO;
     public Gui() {
         clientDAO = new ClientDAO();
+        productDAO = new ProductDAO();
         frame = new JFrame("Order Management System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
@@ -260,15 +262,66 @@ public class Gui {
         buttonPanel.add(addProductButton);
         buttonPanel.add(editProductButton);
         buttonPanel.add(deleteProductButton);
-
+        JTextField idTextField = new JTextField();
+        JTextField nameTextField = new JTextField();
+        JTextField priceTextField = new JTextField();
+        JTextField quantityTextField = new JTextField();
         panel.add(new JScrollPane(productsTable), BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.SOUTH);
-
+        List<Product> productList = productDAO.findAll();
+        for (Product product : productList) {
+            if (product != null) {
+                Object[] rowData = {
+                        product.getId(),
+                        product.getProductName(),
+                        product.getProductPrice(),
+                        product.getProductQuantity()
+                };
+                model.addRow(rowData);
+            }
+        }
         // Add action listeners for the buttons (implement your logic here)
         addProductButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Handle add product button click
+                model.setRowCount(0);
+
+                String name = nameTextField.getText();
+                int price = Integer.parseInt(priceTextField.getText());
+                int quantity = Integer.parseInt(quantityTextField.getText());
+                if(!idTextField.getText().isEmpty()){
+                    try{
+                        int id = Integer.parseInt(idTextField.getText());
+                        Product p = new Product(id,name,price,quantity);productDAO.insert(p);
+                    }
+                    catch (NumberFormatException ex) {
+                        // Handle invalid ID format
+                        JOptionPane.showMessageDialog(frame, "Invalid ID format", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                else{ Product p = new Product(name,price,quantity);productDAO.insert(p);}
+
+                // Add the data to the table
+                List<Product> productList = productDAO.findAll();
+                for (Product product : productList) {
+                    if (product != null) {
+                        Object[] rowData = {
+                                product.getId(),
+                                product.getProductName(),
+                                product.getProductPrice(),
+                                product.getProductQuantity()
+                        };
+                        model.addRow(rowData);
+                    }
+                }
+
+                // Clear the text fields
+                idTextField.setText("");
+                nameTextField.setText("");
+                priceTextField.setText("");
+                quantityTextField.setText("");
             }
         });
 
@@ -276,6 +329,44 @@ public class Gui {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Handle edit product button click
+                model.setRowCount(0);
+
+                String name = nameTextField.getText();
+                int price = Integer.parseInt(priceTextField.getText());
+                int quantity = Integer.parseInt(quantityTextField.getText());
+                if(!idTextField.getText().isEmpty()){
+                    try{
+                        int id = Integer.parseInt(idTextField.getText());
+                        Product p = new Product(id,name,price,quantity);
+                        productDAO.update(p);
+                    }
+                    catch (NumberFormatException ex) {
+                        // Handle invalid ID format
+                        JOptionPane.showMessageDialog(frame, "Invalid ID format", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+
+                // Add the data to the table
+                List<Product> productList = productDAO.findAll();
+                for (Product product : productList) {
+                    if (product != null) {
+                        Object[] rowData = {
+                                product.getId(),
+                                product.getProductName(),
+                                product.getProductPrice(),
+                                product.getProductQuantity()
+                        };
+                        model.addRow(rowData);
+                    }
+                }
+
+                // Clear the text fields
+                idTextField.setText("");
+                nameTextField.setText("");
+                priceTextField.setText("");
+                quantityTextField.setText("");
+
             }
         });
 
@@ -283,8 +374,51 @@ public class Gui {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Handle delete product button click
+                model.setRowCount(0);
+
+                if(!idTextField.getText().isEmpty()){
+                    try{
+                        int id = Integer.parseInt(idTextField.getText());
+                        productDAO.deleteById(id);
+                    }
+                    catch (NumberFormatException ex) {
+                        // Handle invalid ID format
+                        JOptionPane.showMessageDialog(frame, "Invalid ID format", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+
+                // Add the data to the table
+                List<Product> productList = productDAO.findAll();
+                for (Product product : productList) {
+                    if (product != null) {
+                        Object[] rowData = {
+                                product.getId(),
+                                product.getProductName(),
+                                product.getProductPrice(),
+                                product.getProductQuantity()
+                        };
+                        model.addRow(rowData);
+                    }
+                }
+
+                // Clear the text fields
+                idTextField.setText("");
+
             }
         });
+        JPanel textFieldPanel = new JPanel(new GridLayout(5, 2));
+        textFieldPanel.add(new JLabel("Product ID:"));
+        textFieldPanel.add(idTextField);
+        textFieldPanel.add(new JLabel("Product Name:"));
+        textFieldPanel.add(nameTextField);
+        textFieldPanel.add(new JLabel("Price:"));
+        textFieldPanel.add(priceTextField);
+        textFieldPanel.add(new JLabel("Quantity:"));
+        textFieldPanel.add(quantityTextField);
+
+        // Add the text field panel to the main panel
+        panel.add(textFieldPanel, BorderLayout.NORTH);
 
         return panel;
     }
@@ -335,7 +469,6 @@ public class Gui {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 new Gui();
-                OrderDAO O = new OrderDAO();
             }
         });
     }

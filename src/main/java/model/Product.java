@@ -1,12 +1,19 @@
 package model;
 public class Product {
 
-    private int productId,productQuantity,productPrice;
+    private int id,productQuantity,productPrice;
     private String productName;
-
+    public Product() {
+    }
     public Product(int productId, String productName, int productQuantity, int productPrice)
     {
-        this.productId = productId;
+        this.id = productId;
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.productQuantity = productQuantity;
+    }
+    public Product(String productName, int productQuantity, int productPrice)
+    {
         this.productName = productName;
         this.productPrice = productPrice;
         this.productQuantity = productQuantity;
@@ -14,11 +21,11 @@ public class Product {
 //----------------------------------------------ID
 
     public int getId() {
-        return productId;
+        return id;
     }
 
     public void setId(int productId) {
-        this.productId = productId;
+        this.id = productId;
     }
 //----------------------------------------------Name
 
